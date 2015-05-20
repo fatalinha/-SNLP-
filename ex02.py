@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TODO what this does
-TODO usage
+Calculates and graphs mutual information and information gain for some words
+Usage: ./ex02.py
 
-TODO input and output file formats
+Outputs PDF graphs of mutual information and info gain for the selected words
 
 22 May 2015
 Anna Currey, Alina Karakanta, Kata Naszadi
@@ -35,25 +35,25 @@ def computeInfGain(word):
     # compute -sum(P(ci)logP(ci))
     spam_prob = prob_class(spam_train_dir)
     ham_prob = prob_class(ham_train_dir)
-    part1 = -1 * (spam_prob * log(spam_prob) + ham_prob * log(ham_prob))
+    part1 = -1 * (spam_prob * log(spam_prob, 2) + ham_prob * log(ham_prob, 2))
     # compute P(t)sum(P(ci|t)logP(ci|t))
     spamword_prob = prob_classterm(spam_train_dir, ham_train_dir, word)
     hamword_prob = prob_classterm(ham_train_dir, spam_train_dir, word)
     word_prob = prob_term(word)
-    part2 = word_prob * (spamword_prob * log(spamword_prob) + \
-            hamword_prob * log(hamword_prob))
+    part2 = word_prob * (spamword_prob * log(spamword_prob, 2) + \
+            hamword_prob * log(hamword_prob, 2))
     # compute P(not t)sum(P(ci|not t)logP(ci|not t))
-    part3 = (1 - word_prob) * ((1 - spamword_prob) * log(1 - spamword_prob) + \
-            (1 - hamword_prob) * log(1 - hamword_prob))
+    part3 = (1 - word_prob) * ((1 - spamword_prob) * log((1 - spamword_prob), 2) + \
+            (1 - hamword_prob) * log((1 - hamword_prob), 2))
     # IG = part1 + part2 + part3
     return part1 + part2 + part3
  
 # returns the mutual information of a given class and word
 def computeMutInf(my_class_dir, other_class_dir, word):
     # compute log P(c | t)
-    classterm_prob = log(prob_classterm(my_class_dir, other_class_dir, word))
+    classterm_prob = log(prob_classterm(my_class_dir, other_class_dir, word), 2)
     # compute log P(c)
-    class_prob = log(prob_class(my_class_dir))
+    class_prob = log(prob_class(my_class_dir), 2)
     # I(t, c) = log(P(t|c)) - log(P(t))
     return classterm_prob - class_prob
 
@@ -62,7 +62,6 @@ def freq_termclass(my_class_dir, my_term):
     freq = 0
     for curr_file in os.listdir(my_class_dir):
         # check if the term is in that file
-        # TO DO might have to change this is files are too large (memory)
         if my_term in open(my_class_dir + curr_file).read():
             freq += 1
     return freq
@@ -108,7 +107,6 @@ def prob_term(my_term):
 ## main program
 if __name__ == '__main__':
     # will test on each of words and store results in lists
-    # TODO should this actually be tested on the test data?
     info_gains = []
     mut_infos = []
     for word in words:
@@ -116,7 +114,6 @@ if __name__ == '__main__':
         # note just do mutual info for spam
         mut_infos.append(computeMutInf(spam_train_dir, ham_train_dir, word))
     # make graphs
-    # TODO axis labels
     make_plot(info_gains, 'information-gain.pdf')
     make_plot(mut_infos, 'mutual-information.pdf')
     
