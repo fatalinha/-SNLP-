@@ -1,7 +1,7 @@
 # -SNLP-Exercise02
 Text classification and feature selection
 
-## Statistical Natural Language Processing, Exercise 1
+## Statistical Natural Language Processing, Exercise 2
 Summer Semester 2015
 22 May 2015
 
