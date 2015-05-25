@@ -2,7 +2,7 @@
 Word Sense Disambiguation
 
 ## Statistical Natural Language Processing
-Summer Semester 2015
+Summer Semester 2015,
 29 May 2015
 
 ## Group members
