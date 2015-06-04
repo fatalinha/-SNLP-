@@ -108,6 +108,9 @@ def count_emissions(taggedWords):
     # Initialize countEmissionsOfPostags with empty dicts for each word
     countEmissionsOfPostags = dict( (postag,dict()) for postag in postags )
     # Initialize countPostags with zero entries
+    countWordsPerPostag = dict( (postag, 0) for postag in postags)
+    allPostags = tuple(zip(*taggedWords))[1]
+    countWordsPerPostag = Counter(allPostags)
     ''' TODO: Fill (or re-implement) this function '''
     
     '''
