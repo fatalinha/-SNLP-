@@ -5,6 +5,7 @@ Created on May 27, 2015
 '''
 
 from collections import Counter
+import matplotlib.pyplot as plt
 
 def read_tagged_file(file, column_separator = '\t'):
     '''
@@ -59,21 +60,25 @@ def count_transitions(taggedWords):
       
     allPostags = tuple(zip(*taggedWords))[1]
     distinctPostags = set(allPostags)
-
-    # Initialize countTransitionsOfPostags with empty dicts for each tag
-    countTransitionsOfPostags = dict((postag, dict()) for postag in distinctPostags)
-    bigrams = tuple(zip(allPostags, allPostags[1:]))
-    countTransitionsOfPostags = (Counter(bigrams))
-
+    # Initialize countTransitionsOfPostags with empty dicts for each word
+    countTransitionsOfPostags = dict( (postag, dict()) for postag in distinctPostags )
     # Initialize countPostags with zero entries
     countPostagsPerPostag = dict( (postag,0) for postag in distinctPostags )
-    for postag in distinctPostags:
-        countPostagsPerPostag = Counter(allPostags)
-
-
-    # assert(countTransitionsOfPostags['det']['noun'] == 7898)
-    # assert(countPostagsPerPostag['noun'] == 27561)
     
+    bigrams = zip(allPostags, allPostags[1:])
+    # count transitions
+    for pos1, pos2 in bigrams:
+        countTransitionsOfPostags[pos1].setdefault(pos2, 0)
+        countTransitionsOfPostags[pos1][pos2]+=1
+        countPostagsPerPostag[pos1]+=1
+
+
+    
+    ''' TODO: Fill (or re-implement) this function '''
+
+    assert(countTransitionsOfPostags['det']['noun'] == 7898)
+    assert(countPostagsPerPostag['noun'] == 27561)
+
     countDataTransitions = countTransitionsOfPostags, countPostagsPerPostag
     return countDataTransitions
 
@@ -108,18 +113,21 @@ def count_emissions(taggedWords):
     # Initialize countEmissionsOfPostags with empty dicts for each word
     countEmissionsOfPostags = dict( (postag,dict()) for postag in postags )
     # Initialize countPostags with zero entries
-    countWordsPerPostag = dict( (postag, 0) for postag in postags)
-    allPostags = tuple(zip(*taggedWords))[1]
-    countWordsPerPostag = Counter(allPostags)
+    countWordsPerPostag = dict( (postag,0) for postag in postags )
     ''' TODO: Fill (or re-implement) this function '''
+
+    for word, pos in taggedWords:
+        countEmissionsOfPostags[pos].setdefault(word,0)
+        countEmissionsOfPostags[pos][word]+=1
+        countWordsPerPostag[pos]+=1
     
     '''
     In case you decide to use the above representation,
     then if you use the training corpus for counting the 
     assertions below might help you in testing your code. '''
-    # assert(countEmissionsOfPostags['adv']['so'] == 78)
-    # assert(countWordsPerPostag['det'] == 13382)
-    # assert(sum(countWordsPerPostag.values()) == 108503)
+    assert(countEmissionsOfPostags['adv']['so'] == 78)
+    assert(countWordsPerPostag['det'] == 13382)
+    assert(sum(countWordsPerPostag.values()) == 108503)
     
     countDataEmissions = countEmissionsOfPostags, countWordsPerPostag
     return countDataEmissions
@@ -138,13 +146,15 @@ def get_transition_probability(previousPostag, countDataTransitions):
     --------------
     dict
         The return type MUST be a dictionary with postags as keys and floats as values.
-        The values should be such that probabilityTransitions[POS1][POS2] gives the
+        The values should be such that probabilityTransitions[POS2] gives the
         transition probability P(POS2|POS1).
     '''
     
     ''' TODO: Fill (or re-implement) this function '''
     countTransitionsOfPostags, countPostagsPerPostag = countDataTransitions
-    
+    #dict( (postag,dict()) for postag in postags )
+    probabilityTransitions= dict((pos2, count/countPostagsPerPostag[previousPostag]) for pos2, count in countTransitionsOfPostags[previousPostag].items())
+
     return probabilityTransitions
 
 def get_emission_probability(postag, tokens, epsilon, countDataEmissions):
@@ -351,7 +361,8 @@ if __name__ == '__main__':
     print('Training HMM: Counting Emissions')
     countDataEmissions = count_emissions(taggedWords['train'])
 
-    get_TP = lambda postag: get_transition_probability(postag, countDataTransitions) 
+    get_TP = lambda postag: get_transition_probability(postag, countDataTransitions)
+
     get_EP_epsilon = lambda postag, words, epsilon: get_emission_probability(postag, words, epsilon, countDataEmissions) 
     
     # Some tests of probability estimates. Use as a guideline if you want
@@ -376,17 +387,25 @@ if __name__ == '__main__':
         return MCR, MCRRatioOOV, sentences, logProbability
     
     ''' TODO: find/propose a good value for epsilon '''
-    epsilonBest = 1e-4
-    
+    #epsilonBest = 1e-4
+
+    devWords, devPostags=tuple(zip(*taggedWords['development']))
+    OOVdev=set(devWords).difference((trainTokens))
     plottingEnabled = True
     if plottingEnabled:
         def evaluate_epsilon(epsilon):
             ''' Fill this function '''
-            MCR = 0
+            MCR, MCRRatioOOV, sentences,logProbability=evaluate_HMM_for_epsilon(devWords,devPostags, OOVdev, epsilon, countSentences=False)
+
             return MCR
 
-        plotEpsilon = np.logspace(-6,0,20)
+
+        plotEpsilon = np.logspace(-10,-3,20)
         plotMCR = tuple(map(evaluate_epsilon, plotEpsilon))
+        #finding best epsilon
+        best=plotMCR.index(min(plotMCR))
+        epsilonBest=plotEpsilon[best]
+        print("EPSILONBEST", epsilonBest)
     
         plt.semilogx(plotEpsilon,plotMCR,'b.-',label='MCR');
         plt.xlabel('Epsilon')
@@ -396,4 +415,3 @@ if __name__ == '__main__':
     
     MCR, MCRRatioOOV, sentences, logProbability = evaluate_HMM_for_epsilon(testWords, testPostags, OOVtest, epsilonBest, countSentences = True)
     print('Example mistakes:\n\t' + '\n\t'.join(sentences[0:30:3]))
-    
