@@ -11,3 +11,5 @@ Alina Karakanta, 2556612, alinak@coli.uni-saarland.de
 Kata Naszadi, 2556762, b.naszadi@gmail.com
 
 ## Scripts
+ex04_stripped
+Usage: ./ex04_stripped.py
