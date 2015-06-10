@@ -57,8 +57,7 @@ def createInvertedIndex(filename, removeStop=False, lemmatize=False ):
 
     #make dict word:wordId
     wordIds=dict((v,i) for i,v in (enumerate(vocab)))
-    for word, id in wordIds.items():
-        print(word, id)
+
 
     return invertedIndex, wordIds
 
