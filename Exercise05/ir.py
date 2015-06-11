@@ -11,6 +11,9 @@ Kata Naszadi, 2556762
 from nltk.corpus import stopwords
 from nltk.stem.snowball import EnglishStemmer
 from collections import Counter
+import math
+import numpy as np
+
 stopwords=stopwords.words("english")
 
 def createInvertedIndex(filename, removeStop=False, lemmatize=False ):
@@ -51,6 +54,7 @@ def createInvertedIndex(filename, removeStop=False, lemmatize=False ):
                     read=False
                 else:
                     words=line.split()
+
     #convert list to dict word:count
     for id, list in invertedIndex.items():
         invertedIndex[id]=Counter(list)
@@ -58,8 +62,66 @@ def createInvertedIndex(filename, removeStop=False, lemmatize=False ):
     #make dict word:wordId
     wordIds=dict((v,i) for i,v in (enumerate(vocab)))
 
-
     return invertedIndex, wordIds
+
+def createDocWordMatrix(invertedIndex,wordIds, tfIdf=True):
+
+    def createIdf():
+        """
+        returns dict word:idf
+        """
+        idfs={}
+        for word in wordIds:
+            idfs[word]=0
+            for docId in invertedIndex:
+                doc=invertedIndex[docId]
+                if word in doc:
+                    idfs[word]+=1
+            #if word is not OOV --> important for query idfs
+            if idfs[word]:
+                idfs[word]=math.log(len(invertedIndex)/idfs[word])
+
+        return idfs
+
+    docWordMatrix=np.zeros((len(invertedIndex), len(wordIds)), np.float64)
+    idfs=createIdf()
+    if tfIdf:
+        for docId in invertedIndex:
+            doc=invertedIndex[docId]
+            #calculate the size of doc (sum of count of words)
+            docSize=sum(doc.values())
+            for word, wordId in wordIds.items():
+                if word in doc:
+                    docWordMatrix[docId-1, wordId]= (doc[word]/docSize) * idfs[word]
+    #use termfrequencies
+    else:
+        for docId, doc in invertedIndex.items():
+            for word, wordId in wordIds.items():
+                if word in doc:
+                    docWordMatrix[docId, word]= doc[word]
+
+
+
+    return docWordMatrix
+
+def similarity(docM, queryV):
+    #find documentTfIdfs where query nonzero --> terms in query
+    indexes=np.nonzero(queryV)[0]
+    docs=docM[:, indexes]
+
+    #take the sum for each document = each row
+    sums=np.sum(docs,1)
+    #its ascending, bec i dunno how to de descending :/
+    orderedDocs=np.argsort(sums)+1
+
+    return orderedDocs
+
+
+
+
+
+
+
 
 
 
@@ -67,4 +129,27 @@ def createInvertedIndex(filename, removeStop=False, lemmatize=False ):
 #   tuple(zip(*dterm.items()))
 
 if __name__=="__main__":
-    createInvertedIndex("cran/cran.all.1400")
+    docInvertedIndex, wordIds = createInvertedIndex("cran/cran.all.1400",True, True)
+    docM=createDocWordMatrix(docInvertedIndex,wordIds)
+    queryInvertedIndex, qwordIds=createInvertedIndex("cran/cran.qry", True, True)
+    # we want the queryMatrix to be indexed the same way so we use wordIds and not qwordIds
+    # OOVs will have 0 tfidfs, but they are not important for the similarity anyway
+    queryM=createDocWordMatrix(queryInvertedIndex, wordIds)
+    numQueries=queryM.shape[0]
+
+    #get gold stanadard:
+    target=np.loadtxt("cran/cranqrel", dtype=int)
+    #disregard 3.column
+    target=target[:,:2]
+    for i in range(0,numQueries):
+        #select docs relevant query i
+        targetset=set(target[np.where(target[:,0]==i+1)][:,1])
+        numOfTarget=len(targetset)
+        queryVector=queryM[i,:]
+        result=set(similarity(docM, queryVector)[-numOfTarget:])
+        good=result.intersection(targetset)
+        recall=len(good )/ numOfTarget
+        print(i+1, good, recall)
+
+
+
