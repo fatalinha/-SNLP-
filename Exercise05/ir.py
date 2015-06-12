@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Usage:
 
@@ -98,7 +99,7 @@ def createDocWordMatrix(invertedIndex,wordIds, tfIdf=True):
         for docId, doc in invertedIndex.items():
             for word, wordId in wordIds.items():
                 if word in doc:
-                    docWordMatrix[docId, word]= doc[word]
+                    docWordMatrix[docId-1, wordId]= doc[word]
 
 
 
@@ -117,30 +118,22 @@ def similarity(docM, queryV):
     return orderedDocs
 
 
-
-
-
-
-
-
-
-
-# for term count in mv index.items():
-#   tuple(zip(*dterm.items()))
-
-if __name__=="__main__":
-    docInvertedIndex, wordIds = createInvertedIndex("cran/cran.all.1400",True, True)
-    docM=createDocWordMatrix(docInvertedIndex,wordIds)
-    queryInvertedIndex, qwordIds=createInvertedIndex("cran/cran.qry", True, True)
+def test_queries(tf_idf, remove_stop, lemmatize):
+    docInvertedIndex, wordIds = createInvertedIndex("cran/cran.all.1400",remove_stop, lemmatize)
+    docM=createDocWordMatrix(docInvertedIndex,wordIds, tf_idf)
+    queryInvertedIndex, qwordIds=createInvertedIndex("cran/cran.qry", remove_stop, lemmatize)
     # we want the queryMatrix to be indexed the same way so we use wordIds and not qwordIds
     # OOVs will have 0 tfidfs, but they are not important for the similarity anyway
-    queryM=createDocWordMatrix(queryInvertedIndex, wordIds)
+    queryM=createDocWordMatrix(queryInvertedIndex, wordIds, tf_idf)
     numQueries=queryM.shape[0]
-
+    
     #get gold stanadard:
     target=np.loadtxt("cran/cranqrel", dtype=int)
     #disregard 3.column
     target=target[:,:2]
+
+    # list of query results
+    query_results = []
     for i in range(0,numQueries):
         #select docs relevant query i
         targetset=set(target[np.where(target[:,0]==i+1)][:,1])
@@ -149,7 +142,33 @@ if __name__=="__main__":
         result=set(similarity(docM, queryVector)[-numOfTarget:])
         good=result.intersection(targetset)
         recall=len(good )/ numOfTarget
-        print(i+1, good, recall)
+        #print(i+1, good, recall)
+        query_results.append(recall)
+    # now get the average
+    average = np.mean(query_results)
+    return average
+
+
+
+
+if __name__=="__main__":
+    # test each of the options
+    # TF-IDF
+    print('TF-IDF:')
+    for remove_stop in [True, False]:
+        for lemmatize in [True, False]:
+            print('Stop words removed: ' + str(remove_stop) + 
+                  ', Lemmatized: ' + str(lemmatize) + 
+                  ', Avg precision: ' + str(test_queries(True, remove_stop, lemmatize)))
+            #print(test_queries(True, remove_stop, lemmatize))
+    # matrix
+    print('Doc-word matrix:')
+    for remove_stop in [True, False]:
+        for lemmatize in [True, False]:
+            print('Stop words removed: ' + str(remove_stop) + 
+                  ', Lemmatized: ' + str(lemmatize) + 
+                  ', Avg precision: ' + str(test_queries(False, remove_stop, lemmatize)))
+
 
 
 
