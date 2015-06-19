@@ -21,9 +21,7 @@ eps = 0.0001
 query_start = '.I'
 text_start = '.W'
 
-# TO DO
-# test
-# fix the whole .I thing
+# TO DO -- fix the whole .I thing
 
 
 def main():
