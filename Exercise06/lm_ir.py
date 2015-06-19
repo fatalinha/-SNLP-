@@ -71,7 +71,12 @@ def main():
                 gold_standard[int(parts[0])] = [int(parts[1])]
     
     # calculate and print MAP
-    print('Mean avg precision: ' + str(utils.mean_avg_prec(query_ranks, gold_standard)))
+    mean_avg_prec = utils.mean_avg_prec(query_ranks, gold_standard)
+    print('Mean avg precision: ' + str(mean_avg_prec))
+    
+    # calculate and print precision from last time
+    precision = utils.calc_precision(query_ranks, gold_standard)
+    print('Average precision: ' + str(precision))
 
 
 if __name__ == '__main__':

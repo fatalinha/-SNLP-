@@ -47,6 +47,29 @@ def calc_avg_prec(returned_ranks, correct_ranks):
     return curr_total / all_docs
 
 
+# precision calculation from last time
+def calc_precision(query_ranks, gold_standard):
+    '''
+    returns: average precision measure given # of documents to return
+    '''
+    total_precision = 0
+    num_queries = 0
+    
+    # check each of the queries
+    for i in range(len(query_ranks)):
+        num_queries += 1
+        desired_retrieve = len(gold_standard[i])
+        to_check = query_ranks[i][:desired_retrieve]
+        retrieved = 0
+        for doc in to_check:
+            if doc in gold_standard[i]:
+                retrieved += 1
+        total_precision += retrieved / desired_retrieve
+    
+    # average
+    return total_precision / num_queries
+
+
 # how many times a word appears in the collection
 def count_in_collection(word, word_docfreq):
     '''
