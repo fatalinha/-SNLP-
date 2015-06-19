@@ -11,3 +11,9 @@ Alina Karakanta, 2556612, alinak@coli.uni-saarland.de
 Kata Naszadi, 2556762, b.naszadi@gmail.com
 
 ## Scripts
+lm_ir.py
+Usage: ./lm_ir.py
+LM for IR exercise
+
+utils.py
+Helper functions for LM for IR exercise
