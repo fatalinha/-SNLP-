@@ -57,12 +57,13 @@ def calc_precision(query_ranks, gold_standard):
     
     # check each of the queries
     for i in range(len(query_ranks)):
+        # note queries are numbered from 1, not 0
         num_queries += 1
-        desired_retrieve = len(gold_standard[i])
-        to_check = query_ranks[i][:desired_retrieve]
+        desired_retrieve = len(gold_standard[i+1])
+        to_check = query_ranks[i+1][:desired_retrieve]
         retrieved = 0
         for doc in to_check:
-            if doc in gold_standard[i]:
+            if doc in gold_standard[i+1]:
                 retrieved += 1
         total_precision += retrieved / desired_retrieve
     
