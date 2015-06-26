@@ -277,7 +277,7 @@ def sentence_score_f_a_given_e(sentenceE, sentenceF, alignment, tokenProbability
     Unless you want to be very explicit, this can be adequately completed in a few (4-5) lines.
     Note that you do not need to deal with OOV words, unless you change the dataset.
     '''
-    prob = (l + 1) ** m # don't use log-scale probabilities.
+    prob = 1 / ((l + 1) ** m) # don't use log-scale probabilities.
     # product from j = 0 to m-1
     for i in range(m):
         # get (log) transition probs
@@ -318,7 +318,6 @@ def sentence_score_f_given_e(sentenceE, sentenceF, tokenProbabilityFGivenE):
      Complete this function.
     If you need more than a couple of lines, get really suspicious.
     '''
-    # TODO I think it's right but the ratio is really high!!
     # loop over all alignments
     for align in alignmentsValid:
         # find the prob and add to total prob
