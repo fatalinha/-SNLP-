@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Usage: TODO
+Usage: ./entropy.py
 
 Exercise 8: Entropy
 Statistical Natural Language Processing
