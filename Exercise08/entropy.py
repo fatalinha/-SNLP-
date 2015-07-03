@@ -23,7 +23,7 @@ def Entropy(prob_dist):
     '''
     Outputs the entropy for the probability distribution
     Parameter: prob_dist (dictionary), dict of token to probability
-    Returns: entropy (float), entrpy of the probability distribution
+    Returns: entropy (float), entropy of the probability distribution
     '''
     entropy = 0
     # TODO
@@ -31,6 +31,10 @@ def Entropy(prob_dist):
         # get p(word)
         # get log(p(word)) (use base 2)
         # add -p(w)log(p(w)) to the entropy running total
+    for word in prob_dist:
+        p = prob_dist[word]
+        log = math.log(p, 2)
+        entropy += -p * log
     return entropy
 
 
@@ -53,7 +57,19 @@ def parseText(filename):
                 # if word is in the dictionary, update its count
                 # otherwise, add it to the dictionary with a count of 1
     # now convert to a count dict to probability distribution
+    with open(filename) as f:
+        for line in f:
+            words = processText(line)
+            for word in words:
+                num_words += 1
+                if word in count_dict:
+                    count_dict[word] += 1
+                else:
+                    count_dict[word] = 1
     prob_dist = {} # TODO
+    for word in count_dict:
+        prob = count_dict[word] / num_words
+        prob_dist[word] = prob
     return prob_dist
 
 
