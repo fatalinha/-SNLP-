@@ -11,3 +11,6 @@ Alina Karakanta, 2556612, alinak@coli.uni-saarland.de
 Kata Naszadi, 2556762, b.naszadi@gmail.com
 
 ## Scripts
+entropy.py
+Usage: ./entropy.py
+Outputs the entropy for the probability distribution
