@@ -57,7 +57,7 @@ def parseText(filename):
                 # if word is in the dictionary, update its count
                 # otherwise, add it to the dictionary with a count of 1
     # now convert to a count dict to probability distribution
-    with open(filename) as f:
+    with open(filename, 'r', encoding='iso-8859-1') as f:
         for line in f:
             words = processText(line)
             for word in words:
@@ -88,10 +88,12 @@ def processText(line):
         word = ''.join(char for char in word if char not in exclude)
         # stem words
         word = EnglishStemmer().stem(word)
+        # now add to list of words
+        words.append(word)
     return words
 
 
-if '__name__' == '__main__':
+if __name__ == '__main__':
     # for each of the text files
     for filename in os.listdir(textdir):
         file = os.path.join(textdir, filename)
